@@ -43,7 +43,8 @@ const chakraSizeInput = document.getElementById('chakra-size');
 const sizeVal = document.getElementById('size-val');
 const toggleChakraBtn = document.getElementById('toggle-chakra-btn');
 const showDiagonalsCheckbox = document.getElementById('show-diagonals');
-const downloadMapBtn = document.getElementById('download-map-btn');
+const downloadPngBtn = document.getElementById('download-png-btn');
+const downloadPdfBtn = document.getElementById('download-pdf-btn');
 const canvasContainer = document.getElementById('canvas-container');
 const placeholder = document.getElementById('placeholder');
 
@@ -271,7 +272,8 @@ function clearPoints() {
     toggleChakraBtn.disabled = true;
     chakraOpacityInput.disabled = true;
     chakraRotationInput.disabled = true;
-    downloadMapBtn.disabled = true;
+    downloadPngBtn.disabled = true;
+    downloadPdfBtn.disabled = true;
 }
 
 function addPoint(x, y) {
@@ -421,7 +423,8 @@ function calculateCenter() {
 
     // Enable Chakra controls
     toggleChakraBtn.disabled = false;
-    downloadMapBtn.disabled = false;
+    downloadPngBtn.disabled = false;
+    downloadPdfBtn.disabled = false;
 
     // Update Chakra if visible
     if (state.chakraVisible) {
@@ -543,7 +546,7 @@ chakraSizeInput.addEventListener('input', (e) => {
 });
 
 // Download functionality
-downloadMapBtn.addEventListener('click', () => {
+downloadPngBtn.addEventListener('click', () => {
     if (!stage) return;
 
     try {
@@ -553,7 +556,6 @@ downloadMapBtn.addEventListener('click', () => {
             return;
         }
 
-        // Prefer blob export to avoid dataURL issues
         canvas.toBlob((blob) => {
             if (!blob) {
                 alert('Failed to generate image blob. Please try again.');
@@ -571,6 +573,56 @@ downloadMapBtn.addEventListener('click', () => {
     } catch (error) {
         console.error('Error generating image:', error);
         alert('Error generating image: ' + error.message);
+    }
+});
+
+downloadPdfBtn.addEventListener('click', () => {
+    if (!stage) return;
+
+    try {
+        if (!window.jspdf || !window.jspdf.jsPDF) {
+            alert('PDF library not loaded. Please try again.');
+            return;
+        }
+
+        const canvas = stage.toCanvas({ pixelRatio: 2 });
+        if (!canvas) {
+            alert('Failed to capture the stage. Please try again.');
+            return;
+        }
+
+        const dataURL = canvas.toDataURL('image/png');
+        if (!dataURL || dataURL.length < 100) {
+            alert('Failed to generate PDF image. Please try again.');
+            return;
+        }
+
+        const jsPDF = window.jspdf.jsPDF;
+        const pdf = new jsPDF({
+            orientation: 'landscape',
+            unit: 'mm',
+            format: 'a4'
+        });
+
+        const pageWidth = pdf.internal.pageSize.getWidth();
+        const pageHeight = pdf.internal.pageSize.getHeight();
+        const imageRatio = canvas.width / canvas.height;
+        let finalWidth = pageWidth - 20;
+        let finalHeight = finalWidth / imageRatio;
+
+        if (finalHeight > pageHeight - 20) {
+            finalHeight = pageHeight - 20;
+            finalWidth = finalHeight * imageRatio;
+        }
+
+        const x = (pageWidth - finalWidth) / 2;
+        const y = (pageHeight - finalHeight) / 2;
+
+        pdf.addImage(dataURL, 'PNG', x, y, finalWidth, finalHeight);
+        pdf.save('vastu-map-with-chakra.pdf');
+    } catch (error) {
+        console.error('Error generating PDF:', error);
+        alert('Error generating PDF: ' + error.message);
     }
 });
 
