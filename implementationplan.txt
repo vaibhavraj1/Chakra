@@ -1,0 +1,62 @@
+# Vastu Map Analysis Web Application
+
+This document outlines the proposed architecture, tech stack, and implementation plan for the Vastu Map Analysis web application.
+
+## User Review Required
+
+> [!IMPORTANT]
+> Please review the technology choices and the suggested flow below. Since you requested free hosting, a purely frontend application (Serverless) is the best approach. 
+
+> [!NOTE]
+> For the Vastu Chakra, until you provide the image, I will generate a temporary placeholder Vastu Chakra image so we can test the functionality. Once you provide yours, we will replace the placeholder.
+
+## Open Questions
+
+> [!WARNING]
+> 1. **Defining the boundaries**: For extrapolating the edges into a rectangle, the easiest way is to let the user click 4 points on the map representing the corners of the plot. The app will then automatically compute the bounding rectangle and its center. Does this approach work for you?
+> 2. **Chakra Dragging**: You mentioned "drag and rotate the chakra... around its centre". Should the user be able to drag the *entire* chakra to a different location (moving the center), or should it strictly stay locked to the calculated center of the rectangle, and dragging only *rotates* it?
+> 3. **Multiple Files**: You mentioned uploading multiple files. Should the app handle them in tabs/slides so you can analyze one map at a time, or do you want to stitch them together? For version 1, I recommend analyzing one map at a time.
+
+## Proposed Changes
+
+We will build a Client-Side Single Page Application (SPA). This means all the processing (including PDF to image conversion and map drawing) happens in the browser, requiring no backend servers.
+
+### 1. Technology Stack
+- **Framework**: React (via Vite)
+- **Styling**: Vanilla CSS with modern, rich aesthetics (Glassmorphism, dark/light sleek themes).
+- **Canvas/Graphics**: `konva` and `react-konva` for interactive 2D graphics (drawing maps, selecting points, drawing dotted lines, rotating the chakra).
+- **PDF Handling**: `pdfjs-dist` to parse PDFs in the browser and convert them to images for the canvas.
+- **Hosting**: **Vercel** or **Netlify**. Both offer excellent, permanently free tiers for personal frontend projects.
+
+### 2. Implementation Phases
+
+#### Phase 1: Project Setup & UI Foundation
+- Initialize Vite + React project in the `c:\Users\vaibh\Desktop\MahaVastu Project` directory.
+- Implement the premium, aesthetic base UI (sleek background, nice typography, smooth buttons).
+- Create the File Upload component (handling both Images and PDFs).
+
+#### Phase 2: Map Rendering & PDF Parsing
+- Implement PDF to Image conversion using `pdf.js`.
+- Render the uploaded image/PDF onto an interactive HTML5 Canvas using `react-konva`.
+- Add controls to rotate the entire map by 90-degree increments.
+
+#### Phase 3: Boundary Selection & Calculations
+- Add an interactive tool for the user to click and define the 4 corners of the property.
+- Implement the geometry logic to:
+  - Extrapolate the lines to form a bounding rectangle.
+  - Draw the dotted boundary lines.
+  - Calculate and mark the exact center (intersection of diagonals).
+
+#### Phase 4: Vastu Chakra Overlay
+- Integrate the Vastu Chakra image.
+- Superimpose it onto the calculated center point.
+- Add interactive controls (rotation handle) to rotate the chakra around its center, displaying the exact degree of rotation dynamically.
+
+## Verification Plan
+
+### Automated/Manual Verification
+- Upload test JPG/PNG images and verify rendering.
+- Upload test PDF files and verify they render correctly onto the canvas.
+- Select 4 irregular points and verify the bounding box and center are calculated correctly.
+- Verify map 90-degree rotation works without breaking the aspect ratio.
+- Verify the chakra can be rotated and displays accurate degree values (0-360°).
